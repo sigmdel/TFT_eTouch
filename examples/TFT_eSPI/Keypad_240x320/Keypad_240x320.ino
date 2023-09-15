@@ -172,7 +172,7 @@ void loop(void) {
 
     if (key[b].justPressed()) {
       key[b].drawButton(true);  // draw invert
-
+      beep();
       // if a numberpad button, append the relevant # to the numberBuffer
       if (b >= 3) {
         if (numberIndex < NUM_LEN) {
