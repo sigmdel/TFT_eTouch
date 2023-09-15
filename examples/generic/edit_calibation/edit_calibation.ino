@@ -15,6 +15,10 @@
 
 #define TFT_ROTATION 1
 
+#if defined(SECOND_SPI_PORT)
+  SPIClass hSPI(HSPI);
+#endif
+
 //------------------------------------------------------------------------------------------
 #ifdef _ADAFRUIT_ILI9341H_
 Adafruit_ILI9341 tft(TFT_CS, TFT_DC, TFT_RST);
@@ -26,8 +30,11 @@ TFT_eTouch<ILI9341_t3> touch(tft, TFT_ETOUCH_CS, TFT_ETOUCH_PIRQ);
 
 #elif defined (_TFT_eSPIH_)
 TFT_eSPI tft;
+#ifdef SECOND_SPI_PORT
+TFT_eTouch<TFT_eSPI> touch(tft, TFT_ETOUCH_CS, TFT_ETOUCH_PIRQ, hSPI);
+#else
 TFT_eTouch<TFT_eSPI> touch(tft, TFT_ETOUCH_CS, TFT_ETOUCH_PIRQ, TFT_eSPI::getSPIinstance());
-
+#endif
 #else
 # error definition missing in TFT_eTouchUser.h
 #endif
@@ -40,6 +47,10 @@ TMenu menue(touch);
 void setup() {
   Serial.begin(115200);
   delay(2000);
+
+  #ifdef SECOND_SPI_PORT
+  hSPI.begin(TFT_ETOUCH_SCK, TFT_ETOUCH_MISO, TFT_ETOUCH_MOSI, TFT_ETOUCH_CS);
+  #endif
 
   tft.begin();
   touch.init();
