@@ -13,6 +13,24 @@
 //  See TFT_eTouch/docs/html/index.html for documentation.
 //
 
+
+/**@def SECOND_SPI_PORT
+ * Define if the touch controller uses separate SPI peripheral than TFT controller.
+ */
+//#define SECOND_SPI_PORT
+
+
+/** @def ESP32_2432S028R
+ * Define if an ESP32-2432S028R dev board (a.k.a "cheap yellow display") is being used.
+ * Non default pins are used with its second SPI peripheral connected to the touch controller
+ */
+//#define ESP32_2432S028R
+
+#if defined(ESP32_2432S028R) && !defined(SECOND_SPI_PORT)
+  #define SECOND_SPI_PORT
+#endif
+
+
 /** @def TFT_ETOUCH_CS
  * Define the chip select pin for the touch chip.
  */
@@ -20,6 +38,8 @@
 # define TFT_ETOUCH_CS 15
 #elif defined (ESP8266) // with ILI9341
 # define TFT_ETOUCH_CS D1 // Chip select pin (T_CS)
+#elif defined (ESP32_2432S028R)
+# define TFT_ETOUCH_CS 33
 #elif 1
 # define TFT_ETOUCH_CS 3
 #else
@@ -33,6 +53,8 @@
 # define TFT_ETOUCH_PIRQ 6
 #elif 0 //defined (ESP8266) // with ILI9341
 # define TFT_ETOUCH_PIRQ D0 // is touched signal pin (T_IRQ) is high when touched
+#elif defined (ESP32_2432S028R)
+# define TFT_ETOUCH_PIRQ 36
 #elif 0
 # define TFT_ETOUCH_PIRQ 1
 #else
@@ -185,6 +207,17 @@ typedef TFT_eSPI TFT_Driver;
 #endif
 #endif
 
+#if defined(SECOND_SPI_PORT)
+  #if defined(ESP32_2432S028R)
+    #define TFT_ETOUCH_SCK 25
+    #define TFT_ETOUCH_MISO 39
+    #define TFT_ETOUCH_MOSI 32
+  #else
+    #define TFT_ETOUCH_SCK 14
+    #define TFT_ETOUCH_MISO 12
+    #define TFT_ETOUCH_MOSI 13
+  #endif
+#endif
 
 #ifdef DOXYGEN
 // we set all for getting documentation
