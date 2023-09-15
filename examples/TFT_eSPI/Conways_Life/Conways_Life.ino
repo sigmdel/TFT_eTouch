@@ -22,7 +22,12 @@
 TFT_eSPI tft;         // Invoke custom library
 
 #ifndef TOUCH_CS
-TFT_eTouch<TFT_eSPI> touch(tft, TFT_ETOUCH_CS, 0xff, TFT_eSPI::getSPIinstance());
+#ifdef SECOND_SPI_PORT
+SPIClass hSPI(HSPI);
+TFT_eTouch<TFT_eSPI> touch(tft, TFT_ETOUCH_CS, TFT_ETOUCH_PIRQ, hSPI); 
+#else
+TFT_eTouch<TFT_eSPI> touch(tft, TFT_ETOUCH_CS, TFT_ETOUCH_PIRQ, TFT_eSPI::getSPIinstance());
+#endif
 #endif
 
 #define CELL_SIZE 2     // cell in pixel can be 1
@@ -709,6 +714,9 @@ void setup()
 
 
 #ifndef TOUCH_CS
+  #ifdef SECOND_SPI_PORT
+  hSPI.begin(TFT_ETOUCH_SCK, TFT_ETOUCH_MISO, TFT_ETOUCH_MOSI, TFT_ETOUCH_CS);
+  #endif
   touch.init();
 
   // untouched: 35 us touched: 136 us
