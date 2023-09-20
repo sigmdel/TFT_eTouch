@@ -15,10 +15,6 @@
 
 #define TFT_ROTATION 1
 
-#if defined(SECOND_SPI_PORT)
-  SPIClass hSPI(HSPI);
-#endif
-
 //------------------------------------------------------------------------------------------
 #ifdef _ADAFRUIT_ILI9341H_
 Adafruit_ILI9341 tft(TFT_CS, TFT_DC, TFT_RST);
@@ -31,6 +27,7 @@ TFT_eTouch<ILI9341_t3> touch(tft, TFT_ETOUCH_CS, TFT_ETOUCH_PIRQ);
 #elif defined (_TFT_eSPIH_)
 TFT_eSPI tft;
 #ifdef SECOND_SPI_PORT
+SPIClass hSPI(HSPI);
 TFT_eTouch<TFT_eSPI> touch(tft, TFT_ETOUCH_CS, TFT_ETOUCH_PIRQ, hSPI);
 #else
 TFT_eTouch<TFT_eSPI> touch(tft, TFT_ETOUCH_CS, TFT_ETOUCH_PIRQ, TFT_eSPI::getSPIinstance());

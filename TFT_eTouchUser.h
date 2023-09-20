@@ -13,21 +13,38 @@
 //  See TFT_eTouch/docs/html/index.html for documentation.
 //
 
+// Modified 2023-09-18 Sigmdel, see README_TOO.md
 
-/**@def SECOND_SPI_PORT
+/** @def SECOND_SPI_PORT
  * Define if the touch controller uses separate SPI peripheral than TFT controller.
+ *
+ * Default value of
  */
 //#define SECOND_SPI_PORT
 
-
 /** @def ESP32_2432S028R
  * Define if an ESP32-2432S028R dev board (a.k.a "cheap yellow display") is being used.
- * Non default pins are used with its second SPI peripheral connected to the touch controller
+ * Non default pins are used with its second SPI peripheral (hSPI) connected to the touch controller
  */
 //#define ESP32_2432S028R
 
-#if defined(ESP32_2432S028R) && !defined(SECOND_SPI_PORT)
-  #define SECOND_SPI_PORT
+#if defined(SECOND_SPI_PORT) || defined(ESP32_2432S028R)
+
+/** @def TFT_ETOUCH_SCK
+ * Override default GPIO pin connected to second spi clk signal if not equal to default
+ */
+//#define TFT_ETOUCH_SCK
+
+/** @def TFT_ETOUCH_MISO
+ * Override default GPIO pin connected to second spi clk signal if not equal to default
+ */
+//#define TFT_ETOUCH_MISO
+
+/** @def TFT_ETOUCH_MOSI
+ * Override default GPIO pin connected to second spi clk signal if not equal to default
+ */
+//#define TFT_ETOUCH_MOSI
+
 #endif
 
 
@@ -61,55 +78,6 @@
 # define TFT_ETOUCH_PIRQ 255
 #endif
 
-// include used TFT driver
-#if 0 // using Adafuit lib ILI9341
-#include <Adafruit_ILI9341.h>
-typedef Adafruit_ILI9341 TFT_Driver;
-
-# define TFT_DC 4
-# define TFT_CS 3
-# define TFT_RST 17  // on SoftwareReset use -1, and connect pin to 3.3V
-
-#elif defined (TEENSYDUINO) // with ILI9341
-# include <ILI9341_t3.h>    // Hardware-specific TFT library
-typedef ILI9341_t3 TFT_Driver;
-
-# define TFT_DC      20  // Data Command control pin
-# define TFT_CS      21  // Chip select pin
-# define TFT_RST      2  // on SoftwareReset use 255, and connect pin to 3.3V
-# define TFT_MOSI     7  // MasterOut SlaveIn pin (DOUT)
-# define TFT_SCLK    14  // SPI clock (SCK)
-# define TFT_MISO    12  // MasterIn SlaveOut pin (DIN)
-# define TFT_BL       3  // Backlight pin must have PWM for analogWrite if set
-
-#else // ESP_PLATFORM with eSPI
-#include <TFT_eSPI.h>      // Hardware-specific TFT library
-typedef TFT_eSPI TFT_Driver;
-// manage your TFT setup in TFT_eSPI UserSetup.h
-
-# ifdef TOUCH_CS
-#error undef TOUCH_CS in TFT_eSPI UserSetup.h for using TFT_eTouch
-# endif
-
-#endif
-
-#ifndef TFT_ETOUCH_PIRQ
-# define TFT_ETOUCH_PIRQ 255
-#else
-# if (TFT_ETOUCH_PIRQ != 255)
-// if pin is set and valid we have to use penirq code
-# define TOUCH_USE_PENIRQ_CODE
-# endif
-#endif
-
-/** @def TOUCH_USE_PENIRQ_CODE
- * If this define is set the penrirq code is used.
- */
-// undefine this to save progmem if you not have penirq or not using it
-#ifndef TOUCH_USE_PENIRQ_CODE
-//#define TOUCH_USE_PENIRQ_CODE
-#endif
-
 /** @def TOUCH_USE_AVERAGING_CODE
  * If this defined is set the averaging option is available.
  */
@@ -136,7 +104,7 @@ typedef TFT_eSPI TFT_Driver;
 
 /** @def TOUCH_USE_DIFFERENTIAL_MEASURE
  * If this defined is set the 'Differential Measure' mode is used. (SER/DFR low)
- * When undefined 'Single Ended Measure' mode is active. (SER/DFR high) 
+ * When undefined 'Single Ended Measure' mode is active. (SER/DFR high)
  */
 #define TOUCH_USE_DIFFERENTIAL_MEASURE
 
@@ -152,8 +120,13 @@ typedef TFT_eSPI TFT_Driver;
  * - 1: Hamming
  * - 2: Hanning
  * - 3: Blackmann
+ * If TOUCH_FILTER_TYPE is defined undefine a filter or change N, 
+ *   N must be even (default 12), T must be uint16_t which is default
  */
 //#define TOUCH_FILTER_TYPE 1
+//#define TOUCH_X_FILTER FirFilter<20>
+//#define TOUCH_Y_FILTER TOUCH_X_FILTER
+//#define TOUCH_Z_FILTER FirFilter<>
 
 /** @def BASIC_FONT_SUPPORT
  * If this defined is set the tft driver lacks setTextFont() and drawString().
@@ -179,59 +152,5 @@ typedef TFT_eSPI TFT_Driver;
  */
 // define this to see if X, Y, Z1 or Z2 measure is out of range when not touched
 //#define TOUCH_SERIAL_DEBUG_FETCH
-
-
-#ifdef TOUCH_FILTER_TYPE
-#include <TFT_eFirFilter.h>
-// undefine a filter or change N, N must be even (default 12), T must be uint16_t whitch is default
-#define TOUCH_X_FILTER FirFilter<20>
-#define TOUCH_Y_FILTER TOUCH_X_FILTER
-//#define TOUCH_Z_FILTER FirFilter<>
-#endif
-
-#ifndef TOUCH_DEFAULT_CALIBRATION
-#define TOUCH_DEFAULT_CALIBRATION { 300, 3700, 300, 3700, 2 }
-#endif
-
-#if defined (_ILI9341_t3H_) || defined (_ADAFRUIT_ILI9341H_)
-// color used by TFT_eTouch
-#define TFT_BLACK ILI9341_BLACK
-#define TFT_BLUE  ILI9341_BLUE
-#define TFT_GREEN ILI9341_GREEN
-#define TFT_RED   ILI9341_RED
-#define TFT_WHITE ILI9341_WHITE
-
-// missing setTextFont, drawString
-#ifndef BASIC_FONT_SUPPORT
-#define BASIC_FONT_SUPPORT
-#endif
-#endif
-
-#if defined(SECOND_SPI_PORT)
-  #if defined(ESP32_2432S028R)
-    #define TFT_ETOUCH_SCK 25
-    #define TFT_ETOUCH_MISO 39
-    #define TFT_ETOUCH_MOSI 32
-  #else
-    #define TFT_ETOUCH_SCK 14
-    #define TFT_ETOUCH_MISO 12
-    #define TFT_ETOUCH_MOSI 13
-  #endif
-#endif
-
-#ifdef DOXYGEN
-// we set all for getting documentation
-#define TOUCH_USE_PENIRQ_CODE
-#define TOUCH_USE_AVERAGING_CODE
-#define TOUCH_USE_USER_CALIBRATION
-#define TOUCH_USE_SIMPE_TARGET
-#define TOUCH_USE_GESTURE
-#define TOUCH_USE_DIFFERENTIAL_MEASURE
-#define BASIC_FONT_SUPPORT
-#define TOUCH_SERIAL_DEBUG
-#define TOUCH_SERIAL_CONVERSATION_TIME
-#define TOUCH_SERIAL_DEBUG_FETCH
-#define TOUCH_FILTER_TYPE 1
-#endif
 
 #endif // TFT_E_TOUCH_USER_H
