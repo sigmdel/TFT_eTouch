@@ -22,6 +22,20 @@
 
 #define TFT_ETOUCH_VERSION "0.6.0"
 
+#if 0
+
+While __has_include(<tft_touch_setup.h) does work with PlatformIO, the 
+equivalent code in TFT_eSPI (with tft_setup_h) does not work and is 
+deprecated.
+
+ See [Deprecated due to a number of issues with this approach] User setup in the sketch #2007 
+      https://github.com/Bodmer/TFT_eSPI/discussions/2007
+
+ and Remove all references to tft_setup.h and Sketch_with_tft_setup from code #2746 
+     https://github.com/Bodmer/TFT_eSPI/issues/2746
+
+Consequently this is disabled
+ 
 // The following lines 'borrowed' from TFT_eSPI should allow the user
 // setup to be included in the sketch folder. Unfortunately it does
 // not work in the Arduino IDE
@@ -35,6 +49,7 @@
 #  endif
 #elif !defined __has_include
 #  warning Compiler does not support __has_include, so sketches cannot define the setup
+#endif
 #endif
 
 // finish loading settings
