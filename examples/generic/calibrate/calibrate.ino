@@ -33,6 +33,9 @@ TFT_eTouch<ILI9341_t3> touch(tft, TFT_ETOUCH_CS, TFT_ETOUCH_PIRQ);
 TFT_eSPI tft;
 #   ifdef ESP32_PARALLEL
 TFT_eTouch<TFT_eSPI> touch(tft, TFT_ETOUCH_CS, TFT_ETOUCH_PIRQ, SPI);
+#   elif defined(SECOND_SPI_PORT)
+SPIClass hSPI(HSPI);
+TFT_eTouch<TFT_eSPI> touch(tft, TFT_ETOUCH_CS, TFT_ETOUCH_PIRQ, hSPI);
 #   else
 TFT_eTouch<TFT_eSPI> touch(tft, TFT_ETOUCH_CS, TFT_ETOUCH_PIRQ, TFT_eSPI::getSPIinstance());
 #   endif
@@ -147,8 +150,10 @@ void setup() {
   Serial.begin(115200);
   delay(2000);
 
-#ifdef ESP32_PARALLEL
+#if defined ESP32_PARALLEL
   SPI.begin();
+#elif defined SECOND_SPI_PORT
+  hSPI.begin(TFT_ETOUCH_SCK, TFT_ETOUCH_MISO, TFT_ETOUCH_MOSI, TFT_ETOUCH_CS);
 #endif
   tft.begin();
   touch.init();
