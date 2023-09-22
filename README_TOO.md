@@ -20,7 +20,7 @@ Table of contents
 
 ## 1. Purpose
 
-This [fork](https://github.com/sigmdel/TFT_eTouch) of [TFT_eTouch](https://github.com/achillhasler/TFT_eTouch) adds options to simplify the use of displays that have a touch controller and a display driver that are connected to different SPI peripherals. It is also possible to use the PlatformIO configuration file `platformio.ini` to modify the user definable macros on a local basis without editing the `TFT_eTouchUser.h` in the TFT_eTouch library.
+This [fork](https://github.com/sigmdel/TFT_eTouch) of [TFT_eTouch](https://github.com/achillhasler/TFT_eTouch) adds options to simplify the use of displays with touch controller and display driver connected to different SPI peripherals. It is also possible to use the PlatformIO configuration file `platformio.ini` to modify the user definable macros on a local basis without editing the `TFT_eTouchUser.h` in the TFT_eTouch library.
 
 ## 2. Some Background
 
@@ -32,9 +32,9 @@ To use TFT_eTouch instead of the built-in touch driver found in TFT_eSPI,
 
   1. **ensure that `TOUCH_CS` is NOT defined in the TFT_eSPI user configuration file** `User_Setup.h`, and
 
-  1. **do not set** `Compiler warnings` **at levels above** `Default`.
+  1. **do not set** `Compiler warnings` **at levels above** `Default` **in the Arduino IDE**.
 
->If using TFT_eTouch and if `Compiler warnings` are set to `More` or `All` in the Arduino IDE `Preference`, a sketch will not compile. This is because TFT_eTouchGesture will generate warnings of the type `variable 'xneg' set but not used` which are treated as errors. 
+>If `Compiler warnings` are set to `More` or `All` in Arduino IDE `Preferences`, a sketch will not compile. This is because compiler warnings such as `variable 'xneg' set but not used` in TFT_eTouchGesture, are treated as errors. 
 
 ## 4. Support for Touch Controllers Connected to a Second SPI Peripheral
 
@@ -68,7 +68,7 @@ This will in turn define `SECOND_SPI_PORT` but the pin assignment will be differ
 | TFT_ETOUCH_MISO | 39 |
 | TFT_ETOUCH_MOSI | 32 |
 
-These default macro definitions can be overridden but it should not be necessary to adjust these values.
+These default macro definitions can be overridden but that should not be necessary.
 
 ## 6. Configuring TFT_eTouch in the Arduino IDE
 
@@ -108,13 +108,13 @@ The new macros discussed above are added at the top of [TFT_eTouchUser.h](TFT_eT
 #endif
 ```
 
-As can be seen, none are defined by default so that TFT_eTouch remains as before until either `ECOND_SPI_PORT` or `ESP32_2432S028R` is defined.
+As can be seen, none are defined by default so that TFT_eTouch remains as before until either `SECOND_SPI_PORT` or `ESP32_2432S028R` is defined.
 
 The [arduino](arduino/README.md) directory contains modified user configuration files for the TFT_eSPI and TFT_eTouch libraries suitable for the ESP32_2432S028R development board.
 
 ## 7. Configuring TFT_eTouch in PlaformIO
 
-The TFT_eTouch configuration file [TFT_eTouchUser.h](TFT_eTouchUser.h) can be edited as done in the Arduino IDE. However, it is also  possible, and arguably better, to use the usual (local) configuration file `platformio.ini` to define the new macros listed above and the other macros in [TFT_eTouchUser.h](TFT_eTouchUser.h). Do not forget to add the following build flag
+The TFT_eTouch configuration file [TFT_eTouchUser.h](TFT_eTouchUser.h) can be edited as done in the Arduino IDE. However, it is also  possible, and arguably better, to use the usual (local) configuration file `platformio.ini` to set the TFT_eTouch options. Do not forget to add the following build flag
 
 
 ```ini
@@ -123,9 +123,9 @@ build_flags =
   -DTFT_ETOUCHUSER_LOADED ; TFT_eTouch configuration done here and not in TFT_eTouchUser.h
 ...  
 ```
-to ensure that [TFT_eTouchUser.h](TFT_eTouchUser.h) will not be read.
+to ensure that [TFT_eTouchUser.h](TFT_eTouchUser.h) will not be read. This is an *either or* proposition; macros defined or undefined in `platformio.ini` will have no effect if the `TFT_ETOUCHUSER_LOADED` is not defined to bypass [TFT_eTouchUser.h](TFT_eTouchUser.h).
 
-Implementing this functionality required changes very much in the spirit of the TFT_eSPI library. Specifically, a part [TFT_eTouchUser.h](TFT_eTouchUser.h) has been moved to [TFT_ETouch_Setup_Select.h](TFT_ETouch_Setup_Select.h) so that the now smaller [TFT_eTouchUser.h](TFT_eTouchUser.h) contains only user settable macros. [TFT_eTouchBase.h](TFT_eTouchBase.h) no longer includes [TFT_eTouchUser.h](TFT_eTouchUser.h) directly but instead includes [TFT_eTouch_Setup_Select.h](TFT_eTouch_Setup_Select.h) The latter will include [TFT_eTouchUser.h](TFT_eTouchUser.h) if the `TFT_ETOUCHUSER_LOADED` macro is not defined. 
+Implementing this functionality required changes very much in the spirit of the TFT_eSPI library. Specifically, a part [TFT_eTouchUser.h](TFT_eTouchUser.h) has been moved to [TFT_ETouch_Setup_Select.h](TFT_ETouch_Setup_Select.h) so that the now smaller [TFT_eTouchUser.h](TFT_eTouchUser.h) contains only user settable macros. [TFT_eTouchBase.h](TFT_eTouchBase.h) now includes [TFT_eTouch_Setup_Select.h](TFT_eTouch_Setup_Select.h) which in turn will include [TFT_eTouchUser.h](TFT_eTouchUser.h) only if the `TFT_ETOUCHUSER_LOADED` macro is not defined. 
 
 Example configuration files can be found in the [platformio](platformio/README.md) directory.
 
@@ -136,10 +136,10 @@ Here is a typical setup and usage of the TFT_eTouch library in a sketch.
 ```cpp
 #include <FS.h>
 #include <SPI.h>
-#include <TFT_eSPI.h> // Hardware-specific library
-#include <TFT_eTouch.h>
+#include <TFT_eSPI.h> 
+#include <TFT_eTouch.h> 
 
-TFT_eSPI tft;         // Invoke custom library
+TFT_eSPI tft;         
 
 #ifdef SECOND_SPI_PORT
   SPIClass hSPI(HSPI);
@@ -152,7 +152,6 @@ void setup(void) {
   Serial.begin(115200);
   //Set up the display
   tft.init();
-  tft.setRotation(1); // landscape 
 
   #ifdef SECOND_SPI_PORT
     hSPI.begin(TFT_ETOUCH_SCK, TFT_ETOUCH_MISO, TFT_ETOUCH_MOSI, TFT_ETOUCH_CS);
@@ -169,7 +168,9 @@ void loop(void) {
 }
 ```
 
-However, with conditional defines, it is possible to write code that could be used with the touch code handler built-in to TFT_eSPI or with the TFT_eTouch library.
+Because defining the `ESP32_2432S028R` results in `SECOND_SPI_PORT` being defined, the above can be used without change when using the cheap yellow display.
+
+With conditional defines, it is possible to write code that could be used with the touch code handler built-in to TFT_eSPI or with the TFT_eTouch library.
 
 ```cpp
 #include <FS.h>
@@ -179,9 +180,10 @@ However, with conditional defines, it is possible to write code that could be us
 #include <TFT_eTouch.h>
 #endif
 
-TFT_eSPI tft;         // Invoke custom library
-
-#ifndef TOUCH_CS      // Invoke TFT_eTouch 
+#ifdef TOUCH_CS
+  TFT_eSPI tft = TFT_eSPI();  // use TFT_eSPI touch handler
+#else
+  TFT_eSPI tft;               // use TFT_eTouch
   #ifdef SECOND_SPI_PORT
     SPIClass hSPI(HSPI);
     TFT_eTouch<TFT_eSPI> touch(tft, TFT_ETOUCH_CS, TFT_ETOUCH_PIRQ, hSPI); 
@@ -194,7 +196,6 @@ void setup(void) {
   Serial.begin(115200);
   //Set up the display
   tft.init();
-  tft.setRotation(1); // landscape 
 
   #ifndef TOUCH_CS  // Using TFT_eTouch
     #ifdef SECOND_SPI_PORT
@@ -222,7 +223,7 @@ void loop(void) {
 
 All the example Arduino sketches from the original TFT_eTouch library have been modified to work with this fork. Other examples have been added.
 
-It is fairly easy to setup all the Arduino sketches at once.
+It is fairly easy to setup the example Arduino sketches at try them all quickly.
 
   1. Create a directory named `TFT_eTouch_test`
   2. Create a subdirectory named `libraries`
@@ -253,4 +254,4 @@ is used, just copy the files in the [arduino](arduino/README.md) directory over 
   1. Enter the full path of the `TFT_eTouch_test` directory in the **Sketchbook location:** field in the **Settings** tab of the **Preferences** window in the Arduino IDE. It would be wise to first save the location somewhere to restore its content after running the examples.
   2. Open any one of the example sketches in the IDE, compile and upload to the microcontroller.
 
-There is a PlatformIO project among the examples. It is in the `cydMacroPad` directory. There is no need to manually download the needed libraries. The dependancy is specified in `platformio.ini` and the PlatformIO will automatically download them. If an ESP32_2432S028R dev board is used, the project will compile as is. If different hardware is use, it will be necessary to edit `platformio.ini`, but there should be no need to edit the libraries.
+There is a PlatformIO project among the examples. It is in the `cydMacroPad` directory. There is no need to manually download the needed libraries. The dependancy is specified in `platformio.ini` and the PlatformIO will automatically download them. If an ESP32_2432S028R dev board is used, the project will compile as is. If different hardware is use, it will be necessary to edit `platformio.ini`, but there should be no need to edit files in the libraries.
